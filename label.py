@@ -1,9 +1,10 @@
 import pickle
 import cv2
-from detection import BLUE_CLASS, RED_CLASS
+RED_CLASS = 0
+BLUE_CLASS = 1
 
 images = []
-for i in range(0, 2000):
+for i in range(0, 2576):
     images.append('data/pic_' + str(i) + '.jpg')
 
 samples = []
@@ -14,7 +15,6 @@ for index, image in enumerate(images):
     cv2.imshow('pic', image)
     keyboard = cv2.waitKey()
     cv2.destroyWindow('pic')
-    print(keyboard)
     if keyboard == 113:  # q key
         break
     if keyboard == 32:  # space key

@@ -17,8 +17,7 @@ def getPlayerColor(patch):
         prediction[0]) == RED_CLASS else BLUE_COLOR
 
 
-def getPatch(contour):
-    x, y, w, h = cv.boundingRect(contour)
+def getPatch(x, y, w, h):
     patch = frame[y:y+h, x:x+w]
     patch = cv.resize(patch, (PATCH_WIDTH, PATCH_HEIGHT))
     return patch
@@ -48,8 +47,8 @@ points1 = np.array([(1280, 745),  # br
                     (0, 855)]).astype(np.float32)  # bl
 
 points2 = np.array([(375, 380),  # br
-                    (578, 90),  # tr
-                    (45, 90),  # tl
+                    (560, 40),  # tr
+                    (45, 60),  # tl
                     (250, 380)]).astype(np.float32)  # bl
 
 H = cv.getPerspectiveTransform(points1, points2)
@@ -74,19 +73,21 @@ while True:
         fgMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
     for cnt in contours:
-        if(cnt[0][0][1] < 70):
+        x, y, w, h = cv.boundingRect(cnt)
+        # Remove advertises behind the field
+        if(y < 35):
             continue
         area = cv.contourArea(cnt)
         # Remove very small contours
         if area > 25:
-            x = (int)(cnt[0][0][0])
-            y = (int)(cnt[0][0][1])
-            patch = getPatch(cnt)
+            patch = getPatch(x, y, w, h)
             player_color = getPlayerColor(patch)
-            cv.circle(field, (x, y), 4, player_color, 5)
+            shift = -35 if y < 50 else 0
+            cv.circle(field, (int(x + w/2), int(y + h) + shift),
+                      4, player_color, 5)
             # save patches every 30 frames
             if j % 30 == 0:
-                savePatch(patch, i)
+                # savePatch(patch, i)
                 i += 1
     j += 1
 
