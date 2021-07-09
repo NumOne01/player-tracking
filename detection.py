@@ -10,11 +10,19 @@ RED_CLASS = 0
 BLUE_CLASS = 1
 
 
-def getPlayerColor(patch):
-    patch = np.expand_dims(patch, axis=0)
-    prediction = model.predict(patch)
-    return RED_COLOR if np.argmax(
-        prediction[0]) == RED_CLASS else BLUE_COLOR
+def getPlayersColor(patches):
+    predictions = model.predict(patches)
+    return [RED_COLOR if np.argmax(
+        predicton) == RED_CLASS else BLUE_COLOR for predicton in predictions]
+
+
+def drawPlayers(players, coordinates):
+    playerColors = getPlayersColor(players)
+    for index, coordinate in enumerate(coordinates):
+        shift = -35 if coordinate[1] < 50 else 0
+        cv.circle(field, (int(coordinate[0] + coordinate[2]/2), int(coordinate[1] + coordinate[3]) + shift),
+                  4, playerColors[index], 5)
+    return
 
 
 def getPatch(x, y, w, h):
@@ -72,6 +80,8 @@ while True:
     contours, hierarchy = cv.findContours(
         fgMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
+    players = []
+    players_coordinates = []
     for cnt in contours:
         x, y, w, h = cv.boundingRect(cnt)
         # Remove advertises behind the field
@@ -81,15 +91,16 @@ while True:
         # Remove very small contours
         if area > 25:
             patch = getPatch(x, y, w, h)
-            player_color = getPlayerColor(patch)
-            shift = -35 if y < 50 else 0
-            cv.circle(field, (int(x + w/2), int(y + h) + shift),
-                      4, player_color, 5)
+            players.append(patch)
+            players_coordinates.append((x, y, w, h))
             # save patches every 30 frames
             if j % 30 == 0:
                 # savePatch(patch, i)
                 i += 1
-    j += 1
+
+    players = np.array(players)
+    if(players.shape[0] > 0):
+        drawPlayers(players, players_coordinates)
 
     cv.imshow('Field', field)
     cv.imshow('Frame', frame)
@@ -97,3 +108,4 @@ while True:
     keyboard = cv.waitKey(30)
     if keyboard == 'q' or keyboard == 113:
         break
+    j += 1
