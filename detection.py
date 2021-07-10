@@ -22,6 +22,8 @@ def drawPlayers(players, coordinates):
         shift = -35 if coordinate[1] < 50 else 0
         cv.circle(field, (int(coordinate[0] + coordinate[2]/2), int(coordinate[1] + coordinate[3]) + shift),
                   4, playerColors[index], 5)
+        cv.rectangle(frame, (coordinate[0], coordinate[1]), (
+            coordinate[0] + coordinate[2], coordinate[1] + coordinate[3]), playerColors[index])
     return
 
 
